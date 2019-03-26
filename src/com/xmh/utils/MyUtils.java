@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * 验证身份证号码{@link #validateIDNumber(String)}
  * 验证邮箱{@link #validateEmail(String)}
  * 获取32位UUID{@link #getUUID()}
- * 的到异常信息字符串{@link #getErrorInfo(Exception)}
+ * 得到异常信息字符串{@link #getErrorInfo(Exception)}
  */
 
 public class MyUtils {
