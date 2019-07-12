@@ -1,4 +1,4 @@
-package main.java.com.xmh.utils;
+package com.xmh.utils;
 
 
 import java.io.IOException;
