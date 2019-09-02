@@ -14,7 +14,7 @@ import java.io.IOException;
 
 
 /**
- * .
+ * html字符串 转为 pdf二进制
  *
  * @author 谢明辉
  * @date 2019-7-12 14:29

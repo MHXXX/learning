@@ -1,8 +1,13 @@
-package main.java.com.xmh;
+package com.xmh;
 
 
+import com.sun.xml.internal.ws.api.pipe.ContentType;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 
 /**
@@ -13,7 +18,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 
 @SpringBootApplication
-public class Application {
+public class Application implements CommandLineRunner {
 
     public static void main(String[] args) {
         try {
@@ -21,5 +26,10 @@ public class Application {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void run(String... strings) throws Exception {
+
     }
 }

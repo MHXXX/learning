@@ -3,7 +3,7 @@ package com.xmh.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.*;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
@@ -12,8 +12,6 @@ import java.util.Map;
 
 /**
  * @author 谢明辉
- * @createDate 2019-1-8
- * @description
  */
 public class HttpClient<T> {
 
@@ -21,21 +19,20 @@ public class HttpClient<T> {
     private HttpHeaders headers = new HttpHeaders();
     private Map<String, String> params = new HashMap<>();
     private String uri;
+    private static final HttpComponentsClientHttpRequestFactory FACTORY = new HttpComponentsClientHttpRequestFactory();
+
 
     public HttpClient(String uri) {
         this.uri = uri;
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setReadTimeout(20000);
-        factory.setConnectTimeout(20000);
-        restTemplate = new RestTemplate(factory);
+        FACTORY.setConnectTimeout(20000);
+        FACTORY.setReadTimeout(20000);
+        restTemplate = new RestTemplate(FACTORY);
     }
-
     public HttpClient(String uri, int readTimeout, int connectionTimeout) {
         this.uri = uri;
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setReadTimeout(readTimeout);
-        factory.setConnectTimeout(connectionTimeout);
-        restTemplate = new RestTemplate(factory);
+        FACTORY.setReadTimeout(readTimeout);
+        FACTORY.setConnectTimeout(connectionTimeout);
+        restTemplate = new RestTemplate(FACTORY);
     }
 
     /**
@@ -84,7 +81,7 @@ public class HttpClient<T> {
             entity = new HttpEntity<>(body, headers);
             return restTemplate.postForObject(uri, entity, responseClass);
         } catch (Exception e) {
-            System.out.println(MyUtils.getErrorInfo(e));
+            System.out.println(MyUtils.INSTANCE.getErrorInfo(e));
             e.printStackTrace();
             return null;
         }

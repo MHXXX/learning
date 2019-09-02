@@ -1,0 +1,5 @@
+spring:
+  profiles:
+    active: opt
+server:
+  port: 12555
