@@ -7,7 +7,7 @@
     <groupId>com.xmh.utils</groupId>
     <artifactId>com.xmh.utils</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -15,9 +15,10 @@
     </parent>
     <properties>
         <JAVA_HOME>H:\java\jdk1.8.0_121</JAVA_HOME>
+        <postgresql.version>42.2.2</postgresql.version>
     </properties>
-    <dependencies>
 
+    <dependencies>
         <dependency>
             <groupId>com.itextpdf.tool</groupId>
             <artifactId>xmlworker</artifactId>
@@ -53,6 +54,10 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-batch</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
@@ -78,6 +83,11 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -93,33 +103,18 @@
                     <target>1.8</target>
                     <compilerArguments>
                         <bootclasspath>${JAVA_HOME}/jre/lib/rt.jar</bootclasspath>
+                        <bootclasspath>${JAVA_HOME}/jre/lib/jce.jar</bootclasspath>
                     </compilerArguments>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                </configuration>
+            </plugin>
         </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>**/*.xml</include>
-                </includes>
-                <filtering>true</filtering>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/*.properties</include>
-                    <include>**/*.xml</include>
-                    <include>**/*.yml</include>
-                    <include>**/*.html</include>
-                    <include>**/*.jpg</include>
-                </includes>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
     </build>
-
-
 
 
 </project>

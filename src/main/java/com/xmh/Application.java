@@ -1,24 +1,29 @@
 package com.xmh;
 
 
-import com.sun.xml.internal.ws.api.pipe.ContentType;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.launch.support.SimpleJobLauncher;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.http.HttpHeaders;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 
 /**
  * .
  *
  * @author 谢明辉
- * @date 2019-7-12 14:13
  */
 
 @SpringBootApplication
-public class Application implements CommandLineRunner {
+@EnableBatchProcessing
+public class Application{
 
     public static void main(String[] args) {
         try {
@@ -26,10 +31,5 @@ public class Application implements CommandLineRunner {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void run(String... strings) throws Exception {
-
     }
 }

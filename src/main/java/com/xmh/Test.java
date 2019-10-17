@@ -4,6 +4,7 @@ package com.xmh;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
+import org.apache.tomcat.jni.Local;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpHeaders;
@@ -17,44 +18,41 @@ import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.TcpClient;
 
 import java.io.IOException;
-import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
+import java.util.SplittableRandom;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Stream;
 
 
 /**
  * .
  *
  * @author 谢明辉
- * @date 2019-7-12 14:42
  */
 
 public class Test {
 
-    static String token = "NWmoOhGWei/v345SrT/DRYTHmaRSFfj7";
+    private static String TOKEN = "NWmoOhGWei/v345SrT/DRYTHmaRSFfj7";
 
     public static void main(String[] args) throws IOException {
-        BigDecimal low = new BigDecimal(1.4);
-        BigDecimal high = new BigDecimal(1.5);
-        BigDecimal mid = null;
-        for (int i = 0; i < 1000; i++) {
-            mid = low.add(high).multiply(new BigDecimal(0.5));
-            if (low.multiply(high).compareTo(new BigDecimal(2)) < 0) {
-                low = mid;
-            } else if (low.multiply(high).compareTo(new BigDecimal(2)) > 0) {
-                high = mid;
-            }
-        }
-
-        System.out.println(mid.toString());
-        System.out.println(Math.sqrt(2));
+        randomTest();
     }
 
     private void restTemplate() {
         ResponseEntity<String> res = new com.xmh.utils.HttpClient<String>("https://v2.jinrishici.com/one.json")
-                                     .addHeader("X-User-Token", token)
-                                     .addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON.toString())
-                                     .get(String.class);
+                .addHeader("X-User-Token", TOKEN)
+                .addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON.toString())
+                .get(String.class);
 
         JSONObject origin = new JSONObject(res.getBody()).getJSONObject("data").getJSONObject("origin");
         String title = origin.getString("title");
@@ -74,25 +72,45 @@ public class Test {
         TcpClient tcpClient = TcpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 100000).doOnConnected(connect -> connect.addHandlerLast(new ReadTimeoutHandler(3600)).addHandlerLast(new WriteTimeoutHandler(3600)));
 
         WebClient client = WebClient.builder()
-                           .defaultHeader("Content-type", "application/json")
-                           .clientConnector(new ReactorClientHttpConnector(HttpClient.from(tcpClient)))
-                           .build();
+                .defaultHeader("Content-type", "application/json")
+                .clientConnector(new ReactorClientHttpConnector(HttpClient.from(tcpClient)))
+                .build();
 
         Mono<HashMap> stringMono = client.get()
-                                   .uri("https://v2.jinrishici.com/sentence")
-                                   .accept(MediaType.APPLICATION_JSON)
-                                   .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
-                                   .header("X-User-Token", token)
-                                   .retrieve()
-                                   .onStatus(HttpStatus:: isError, res -> Mono.error(new RuntimeException(res.statusCode().value() + ":" + res.statusCode().getReasonPhrase())))
-                                   .bodyToMono(HashMap.class)
-                                   .doOnError(err -> System.out.println(err.getMessage()))
-                                   .doOnSuccess(item -> {
-                                       HashMap map = (HashMap) item.get("data");
-                                       String content = (String) map.get("content");
-                                       System.out.println(content);
-                                   });
+                .uri("https://v2.jinrishici.com/sentence")
+                .accept(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .header("X-User-Token", TOKEN)
+                .retrieve()
+                .onStatus(HttpStatus::isError, res -> Mono.error(new RuntimeException(res.statusCode().value() + ":" + res.statusCode().getReasonPhrase())))
+                .bodyToMono(HashMap.class)
+                .doOnError(err -> System.out.println(err.getMessage()))
+                .doOnSuccess(item -> {
+                    HashMap map = (HashMap) item.get("data");
+                    String content = (String) map.get("content");
+                    System.out.println(content);
+                });
         stringMono.block();
+    }
+
+    private static void test2() throws IOException {
+        Path path = Paths.get("C:\\insertTimeRecord.txt");
+        try (Stream<String> stream = Files.lines(path)) {
+            stream.forEach(System.out::println);
+        }
+    }
+
+    private static void randomTest() {
+        int i = ThreadLocalRandom.current().nextInt(0, 100);
+        System.out.println(i);
+//        SplittableRandom splittableRandom = new SplittableRandom();
+//        splittableRandom.ints(10, 0, 10).forEach(System.out::println);
+    }
+
+    private static void instantFormatTest() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
+        String format = formatter.format(Instant.now().truncatedTo(ChronoUnit.HOURS).atZone(ZoneId.systemDefault()));
+        System.out.println(format);
     }
 
 }
