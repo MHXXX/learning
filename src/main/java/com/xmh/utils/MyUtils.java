@@ -21,24 +21,24 @@ import java.util.regex.Pattern;
  * 工具集
  *
  * @author 谢明辉
- *         <p>
- *         判断字符串是否为空{@link #isEmpty(String)}
- *         判断数组是否为空{@link #isEmpty(Object[])}
- *         将一个集合平均分成N个集合{@link #averageAssign(List, int)}
- *         合并字符串{@link #stringMerge(Object...)}
- *         线程休息1秒{@link #sleep()}
- *         线程休息N毫秒{@link #sleep(long)}
- *         生成6位随机数{@link #random6()}
- *         验证手机号码{@link #validatePhoneNumber(String)}
- *         验证身份证号码{@link #validateIDNumber(String)}
- *         验证邮箱{@link #validateEmail(String)}
- *         获取32位UUID{@link #getUUID()}
- *         得到异常信息字符串{@link #getErrorInfo(Exception)}
- *         LocalDate 转 Date{@link #dateFromLocalDate(LocalDate)}
- *         LocalDateTime 转 Date{@link #dateFromLocalDateTime(LocalDateTime)}
- *         Date 转 LocalDate{@link #localDateFromDate(Date)}
- *         Date 转 LocalDateTime{@link #localDateTimeFromDate(Date)}
- *         获取当前时间字符串 {@link #getNowTimeStr()}
+ * <p>
+ * 判断字符串是否为空{@link #isEmpty(String)}
+ * 判断数组是否为空{@link #isEmpty(Object[])}
+ * 将一个集合平均分成N个集合{@link #averageAssign(List, int)}
+ * 合并字符串{@link #stringMerge(Object...)}
+ * 线程休息1秒{@link #sleep()}
+ * 线程休息N毫秒{@link #sleep(long)}
+ * 生成6位随机数{@link #random6()}
+ * 验证手机号码{@link #validatePhoneNumber(String)}
+ * 验证身份证号码{@link #validateIdNumber(String)}
+ * 验证邮箱{@link #validateEmail(String)}
+ * 获取32位UUID{@link #uuidRandom()}
+ * 得到异常信息字符串{@link #getErrorInfo(Exception)}
+ * LocalDate 转 Date{@link #localDate2Date(LocalDate)}
+ * LocalDateTime 转 Date{@link #localDateTime2Date(LocalDateTime)}
+ * Date 转 LocalDate{@link #date2LocalDate(Date)}
+ * Date 转 LocalDateTime{@link #date2LocalDateTime(Date)}
+ * 获取当前时间字符串 {@link #getNowTimeStr()}
  */
 
 @SuppressWarnings("ALL")
@@ -61,6 +61,7 @@ public enum MyUtils {
 
     /**
      * @param s 需要判断是否为空的字符串
+     *
      * @return boolean
      */
     public boolean isEmpty(String s) {
@@ -71,6 +72,7 @@ public enum MyUtils {
      * 判断数组是否为空
      *
      * @param objects 需要判断的数组
+     *
      * @return boolean
      * @createDate 2019-3-12
      */
@@ -82,6 +84,7 @@ public enum MyUtils {
     /**
      * @param source 源数据集合
      * @param n      份数
+     *
      * @return java.util.List<java.util.List> 均分后的集合
      */
     public <T> List<List<T>> averageAssign(List<T> source, int n) {
@@ -108,6 +111,7 @@ public enum MyUtils {
 
     /**
      * @param objects 需要合并的字符串
+     *
      * @return java.lang.String
      */
     public String stringMerge(Object... objects) {
@@ -160,6 +164,7 @@ public enum MyUtils {
 
     /**
      * @param mobile 手机号码
+     *
      * @return boolean
      */
     public boolean validatePhoneNumber(String mobile) {
@@ -168,14 +173,16 @@ public enum MyUtils {
 
     /**
      * @param id 身份证号
+     *
      * @return boolean
      */
-    public boolean validateIDNumber(String id) {
+    public boolean validateIdNumber(String id) {
         return isEmpty(id) && ID_PATTERN.matcher(id).matches();
     }
 
     /**
      * @param email 电子邮箱
+     *
      * @return boolean
      */
     public boolean validateEmail(String email) {
@@ -186,7 +193,7 @@ public enum MyUtils {
     /**
      * @return java.lang.String
      */
-    public String getUUID() {
+    public String uuidRandom() {
         return UUID.randomUUID().toString().trim().replaceAll("-", "").toUpperCase();
 
     }
@@ -195,6 +202,7 @@ public enum MyUtils {
      * 将exception打印到String中
      *
      * @param e 异常
+     *
      * @return java.lang.String
      */
     public String getErrorInfo(Exception e) {
@@ -216,7 +224,7 @@ public enum MyUtils {
      *
      * @date 2019-7-12
      */
-    public Date dateFromLocalDate(LocalDate localDate) {
+    public Date localDate2Date(LocalDate localDate) {
         ZonedDateTime zdt = localDate.atStartOfDay(ZoneId.systemDefault());
         return Date.from(zdt.toInstant());
     }
@@ -226,7 +234,7 @@ public enum MyUtils {
      *
      * @date 2019-7-12
      */
-    public Date dateFromLocalDateTime(LocalDateTime localDateTime) {
+    public Date localDateTime2Date(LocalDateTime localDateTime) {
         ZonedDateTime zdt = localDateTime.atZone(ZoneId.systemDefault());
         return Date.from(zdt.toInstant());
     }
@@ -236,7 +244,7 @@ public enum MyUtils {
      *
      * @date 2019-7-12
      */
-    public LocalDate localDateFromDate(Date date) {
+    public LocalDate date2LocalDate(Date date) {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
@@ -245,7 +253,7 @@ public enum MyUtils {
      *
      * @date 2019-7-12
      */
-    public LocalDateTime localDateTimeFromDate(Date date) {
+    public LocalDateTime date2LocalDateTime(Date date) {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
 

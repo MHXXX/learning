@@ -3,7 +3,7 @@ package com.xmh.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.*;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
@@ -12,27 +12,24 @@ import java.util.Map;
 
 /**
  * @author 谢明辉
+ * @createDate 2019-1-8
+ * @description
  */
 public class HttpClient<T> {
+    private static final SimpleClientHttpRequestFactory FACTORY = new SimpleClientHttpRequestFactory();
 
-    private RestTemplate restTemplate;
+    static {
+        FACTORY.setReadTimeout(600000);
+        FACTORY.setConnectTimeout(600000);
+    }
+
+    private static final RestTemplate REST_TEMPLATE = new RestTemplate(FACTORY);
     private HttpHeaders headers = new HttpHeaders();
     private Map<String, String> params = new HashMap<>();
     private String uri;
-    private static final HttpComponentsClientHttpRequestFactory FACTORY = new HttpComponentsClientHttpRequestFactory();
-
 
     public HttpClient(String uri) {
         this.uri = uri;
-        FACTORY.setConnectTimeout(20000);
-        FACTORY.setReadTimeout(20000);
-        restTemplate = new RestTemplate(FACTORY);
-    }
-    public HttpClient(String uri, int readTimeout, int connectionTimeout) {
-        this.uri = uri;
-        FACTORY.setReadTimeout(readTimeout);
-        FACTORY.setConnectTimeout(connectionTimeout);
-        restTemplate = new RestTemplate(FACTORY);
     }
 
     /**
@@ -40,6 +37,7 @@ public class HttpClient<T> {
      *
      * @param key   key
      * @param value value
+     *
      * @return com.viontech.keliu.http.HttpClient
      * @createDate 2019-1-8
      */
@@ -54,6 +52,7 @@ public class HttpClient<T> {
      *
      * @param key   key
      * @param value value
+     *
      * @return com.viontech.keliu.http.HttpClient 返回自己
      * @createDate 2019-1-8
      */
@@ -65,38 +64,32 @@ public class HttpClient<T> {
     /**
      * @param data          请求体
      * @param responseClass 接收数据的类
+     *
      * @return org.springframework.http.ResponseEntity<T>
      * @createDate 2019-1-8
      */
-    public T post(Object data, Class<T> responseClass) {
-        try {
-            HttpEntity<String> entity;
-            if (data == null) {
-                data = new Object();
-            }
-            ObjectMapper mapper = new ObjectMapper();
-            String body = mapper.writeValueAsString(data);
-
-
-            entity = new HttpEntity<>(body, headers);
-            return restTemplate.postForObject(uri, entity, responseClass);
-        } catch (Exception e) {
-            System.out.println(MyUtils.INSTANCE.getErrorInfo(e));
-            e.printStackTrace();
-            return null;
+    public ResponseEntity<T> post(Object data, Class<T> responseClass) throws Exception {
+        HttpEntity<String> entity;
+        if (data == null) {
+            data = new Object();
         }
+        ObjectMapper mapper = new ObjectMapper();
+        String body = mapper.writeValueAsString(data);
+        entity = new HttpEntity<>(body, headers);
+        return REST_TEMPLATE.postForEntity(uri, entity, responseClass);
     }
 
     /**
      * get请求
      *
      * @param responseClass 接收数据的类
+     *
      * @return org.springframework.http.ResponseEntity<T> 请求的结果
      * @createDate 2019-1-8
      */
     public ResponseEntity<T> get(Class<T> responseClass) {
         HttpEntity entity = new HttpEntity(headers);
-        return restTemplate.exchange(getUriFormat(), HttpMethod.GET, entity, responseClass);
+        return REST_TEMPLATE.exchange(getUriFormat(), HttpMethod.GET, entity, responseClass);
     }
 
     /**
@@ -127,6 +120,11 @@ public class HttpClient<T> {
 
     public HttpClient<T> jsonType() {
         this.headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+        return this;
+    }
+
+    public HttpClient<T> setToken(String token) {
+        this.headers.add("atoken", token);
         return this;
     }
 
