@@ -165,22 +165,17 @@
     <logger name="jdbc.audit" level="off">
 
     </logger>
-    <logger name="jdbc.resultset" level="off">
+    <logger name="jdbc.resultset" level="debug">
 
     </logger>
     <logger name="jdbc.connection" level="off">
 
     </logger>
-    <logger name="jdbc.sqltiming" level="off">
+    <logger name="jdbc.sqltiming" level="debug">
 
     </logger>
-    <logger name="org.springframework.batch" level="info">
-        <appender-ref ref="INFO_FILE" />
-        <appender-ref ref="WARN_FILE" />
-        <appender-ref ref="ERROR_FILE" />
-    </logger>
 
-    <root name="com.viontech.keliu" level="info">
+    <root level="DEBUG">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="DEBUG_FILE" />
         <appender-ref ref="INFO_FILE" />
