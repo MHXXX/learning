@@ -1,8 +1,7 @@
 package com.xmh;
 
-import java.util.Scanner;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.LockSupport;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
 
 /**
  * .
@@ -11,24 +10,52 @@ import java.util.concurrent.locks.LockSupport;
  * @date 2020-1-7
  */
 
-public class Test2 implements Runnable {
+public class Test2 {
 
-    @Override
-    public void run() {
-        LockSupport.park();
-
-        System.out.println(1);
+    public static void main(String[] args) throws Exception {
+        System.out.println(System.getProperty("os.arch"));
+        run(100);
     }
 
-    public static void main(String[] args) {
-        Thread t = new Thread(new Test2());
-        t.start();
+    public static Integer small(Integer num) {
+        return num * 2 + 1;
+    }
 
-        Scanner s = new Scanner(System.in);
-        s.next();
-        LockSupport.unpark(t);
+    public static Integer big(Integer num) {
+        return num * 3 + 1;
+    }
+
+    public static void run(int n) {
+        PriorityQueue<Integer> queue = new PriorityQueue<>();
+        queue.add(1);
+        LinkedList<Integer> list = new LinkedList<>();
+        list.add(1);
+        int min = 0;
+        while (n > min) {
+            LinkedList<Integer> temp = new LinkedList<>();
+            for (Integer item : list) {
+                Integer small = small(item);
+                Integer big = big(item);
+                if (!queue.contains(small)) {
+                    queue.add(small);
+                    min++;
+                }
+                temp.add(small);
+                if (!queue.contains(big)) {
+                    queue.add(big);
+                }
+                temp.add(big);
+            }
+            list = temp;
+        }
+
+        for (int i = 0; i < n; i++) {
+            System.out.println(queue.poll());
+        }
+        System.out.println(queue.poll());
 
 
     }
+
 
 }
