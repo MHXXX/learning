@@ -14,7 +14,8 @@ public class QuickSort {
 
     public static void main(String[] args) {
         int[] ints = {5, 8, 9, 7, 3, 6, 11, 88, 44, 31, 22, 15, 88, 55, 132, 54};
-        ints = sortArray(ints);
+//        ints = sortArray(ints);
+        partition2(ints, 0, ints.length - 1);
         System.out.println(Arrays.toString(ints));
     }
 
@@ -27,9 +28,9 @@ public class QuickSort {
             Integer right = list.pop();
             Integer left = list.pop();
             int index = partition(nums, left, right);
-            if (left < index) {
+            if (left < index - 1) {
                 list.push(left);
-                list.push(index);
+                list.push(index - 1);
             }
             if (index + 1 < right) {
                 list.push(index + 1);
@@ -43,6 +44,28 @@ public class QuickSort {
         int l = start;
         int r = end;
 
+        int temp = nums[l];
+        while (l < r) {
+            while (l < r && nums[r] >= temp) {
+                r--;
+            }
+            nums[l] = nums[r];
+
+            while (l < r && nums[l] < temp) {
+                l++;
+            }
+            nums[r] = nums[l];
+        }
+        nums[l] = temp;
+        return l;
+    }
+
+
+    private static void partition2(int[] nums, int start, int end) {
+        int l = start;
+        int r = end;
+
+        if (l < r) {
             int temp = nums[l];
             while (l < r) {
                 while (l < r && nums[r] >= temp) {
@@ -56,7 +79,9 @@ public class QuickSort {
                 nums[r] = nums[l];
             }
             nums[l] = temp;
-            return l;
+            partition(nums, start, l);
+            partition(nums, l + 1, end);
+        }
     }
 
 }
