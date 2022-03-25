@@ -1,6 +1,7 @@
 package com.xmh.cache;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.concurrent.Callable;
@@ -16,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class CacheUtil {
     private static final ConcurrentHashMap<String, CacheInfo> CACHE = new ConcurrentHashMap<>();
-
+    private static final Expired EXPIRED = new Expired();
 
     public static void cache(String key, Object o) throws Exception {
         cache(key, o, TimeUnit.MINUTES, 5L);
@@ -50,11 +51,14 @@ public class CacheUtil {
         Object o;
         try {
             o = cacheInfo.get();
+            if (o instanceof Expired) {
+                return ImmutablePair.of(false, null);
+            } else {
+                return ImmutablePair.of(true, o == null ? null : (T) o);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-        return ImmutablePair.of(true, o == null ? null : (T) o);
     }
 
     public static void delete(String key) {
@@ -108,10 +112,14 @@ public class CacheUtil {
                     expire = System.currentTimeMillis() + timeUnit.toMillis(duration);
                     return data;
                 } else {
-                    return null;
+                    CACHE.remove(key);
+                    return EXPIRED;
                 }
 
             }
         }
+    }
+
+    private static class Expired{
     }
 }
