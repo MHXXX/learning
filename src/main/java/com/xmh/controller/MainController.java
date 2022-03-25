@@ -19,9 +19,15 @@ public class MainController {
 
     @GetMapping("/test/{num}")
     @MyLog(success = "'hello ' + #num")
-    @LocalCache(expression = "'testKey_' + #num", duration = 10 ,timeunit = TimeUnit.SECONDS)
+    @LocalCache(expression = "'testKey_' + #num", duration = 10)
     public String test(@PathVariable("num") Integer num) {
         return "success " + num;
+    }
+
+    @GetMapping("/test2/{num}")
+    @LocalCache(expression = "'testKey_' + #num", delete = true)
+    public String test2(@PathVariable("num") Integer num) {
+        return "delete " + num;
     }
 
 }
