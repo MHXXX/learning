@@ -1,6 +1,8 @@
 package com.xmh;
 
 
+import com.xmh.log.config.EnableMyLog;
+import com.xmh.log.function.MyLogFunction;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -23,6 +25,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @SpringBootApplication
 @EnableBatchProcessing
+@EnableMyLog
 public class Application{
 
     public static void main(String[] args) {
@@ -31,5 +34,23 @@ public class Application{
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Bean
+    public MyLogFunction squareFunction() {
+
+        return new MyLogFunction() {
+            @Override
+            public String getName() {
+                return "pow";
+            }
+
+            @Override
+            public String apply(Object o) {
+                String s = String.valueOf(o);
+                int i = Integer.parseInt(s);
+                return String.valueOf(i * i);
+            }
+        };
     }
 }

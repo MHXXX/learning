@@ -1,6 +1,8 @@
 package com.xmh.controller;
 
+import com.xmh.log.core.MyLog;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -12,9 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class MainController {
 
-    @GetMapping("/test")
-    public String test() {
-        return "success";
+    @GetMapping("/test/{num}")
+    @MyLog(success = "'hello ' + #pow(#num)")
+    public String test(@PathVariable("num") Integer num) {
+        return "success " + num;
     }
 
 }
