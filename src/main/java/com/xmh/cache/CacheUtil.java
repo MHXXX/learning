@@ -57,6 +57,10 @@ public class CacheUtil {
         return ImmutablePair.of(true, o == null ? null : (T) o);
     }
 
+    public static void delete(String key) {
+        CACHE.remove(key);
+    }
+
     private static class CacheInfo {
         /** 缓存Loader */
         public final Callable<?> callable;
