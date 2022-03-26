@@ -175,9 +175,11 @@
 
     </logger>
 
-    <root level="DEBUG">
+    <logger name="xmh.com" level="debug" additivity="false">
         <appender-ref ref="CONSOLE" />
-        <appender-ref ref="DEBUG_FILE" />
+    </logger>
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
         <appender-ref ref="INFO_FILE" />
         <appender-ref ref="WARN_FILE" />
         <appender-ref ref="ERROR_FILE" />

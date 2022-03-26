@@ -31,7 +31,13 @@ public class LocalCacheAspect {
     @Around("@annotation(localCache)")
     public Object around(ProceedingJoinPoint point, LocalCache localCache) throws Throwable {
         Object o;
-        String key = getCacheKey(point, localCache.expression());
+        String key;
+        try {
+            key = getCacheKey(point, localCache.expression());
+        } catch (Exception e) {
+            log.error("获取缓存 key 失败", e);
+            return point.proceed();
+        }
 
         // 删除缓存
         if (localCache.delete()) {
