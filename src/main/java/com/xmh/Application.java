@@ -1,6 +1,7 @@
 package com.xmh;
 
 
+import com.xmh.cache.EnableLocalCache;
 import com.xmh.log.config.EnableMyLog;
 import com.xmh.log.function.MyLogFunction;
 import org.springframework.batch.core.Job;
@@ -26,6 +27,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @SpringBootApplication
 @EnableBatchProcessing
 @EnableMyLog
+@EnableLocalCache
 public class Application{
 
     public static void main(String[] args) {
