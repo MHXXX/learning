@@ -1,6 +1,14 @@
 package com.xmh;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.text.CharSequenceUtil;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * .
@@ -10,30 +18,47 @@ import cn.hutool.core.util.StrUtil;
  */
 public class SQLGenerator {
 
-    /**
-     * private String userName;
-     * private String departmentName;
-     * private String opMenu;
-     * private String opButton;
-     * private Integer opStatus;
-     * private Long startTs;
-     * private Long endTs;
-     */
-    public static void main(String[] args) {
-//        String sql = insertGenerator("audit_op_log", new String[]{"user", "user_name", "department_id", "department_name", "op_menu", "op_button", "op_res", "op_status"}, "auditOpLogDO");
-//        String sql = updateGenerator("audit_event_type", new String[]{"event_name", "scenario_id", "event_desc"}, new String[]{"id"}, "auditEventTypeDO");
-//        String sql = selectGenerator("audit_event_type", new String[]{"event_name", "scenario_id", "status"}, null, "offset", "pageSize");
-        String sql = selectGenerator("audit_op_log", new String[]{"user_name","department_name","op_menu","op_button","op_status"}, null, "offset", "pageSize");
+    private static final String AND = " and ";
 
-        System.out.println(sql);
+    public static void main(String[] args) {
+        System.out.println(selectSql());
+    }
+
+    public static String insertSql() {
+        return insertGenerator("audit_whitelist",
+
+                new String[]{"user", "user_name", "department_id", "department_name", "rule_id", "scenario_id", "event_type",
+                        "incident_category_code", "reason", "creator", "updater", "expire_time", "risk_level"},
+
+                "do");
+    }
+
+    public static String updateSql() {
+        List<WhereEntry> entries = new LinkedList<>();
+        entries.add(WhereEntry.of(null, "user_name", String.class, Operation.EQUAL));
+        return updateGenerator("audit_event_type", entries, new String[]{"id"}, "auditEventTypeDO");
+
     }
 
 
-    public static String selectGenerator(String tableName, String[] whereColumns, String paramName, String offSetName, String limitName) {
+    public static String selectSql() {
+        List<WhereEntry> entries = new LinkedList<>();
+        entries.add(WhereEntry.of(null, "user_name", String.class, Operation.EQUAL));
+        entries.add(WhereEntry.of(null, "department_name", String.class, Operation.LIKE));
+        entries.add(WhereEntry.of(null, "triggered_strategy_name", String.class, Operation.LIKE));
+        entries.add(WhereEntry.of(null, "scenario_id", Number.class, Operation.EQUAL));
+        entries.add(WhereEntry.of(null, "warn_level", Number.class, Operation.EQUAL));
+        entries.add(WhereEntry.of(null, "create_time", Date.class, Operation.LTE).setValueA("endTs"));
+        entries.add(WhereEntry.of(null, "create_time", Date.class, Operation.GTE).setValueA("startTs"));
+        return selectGenerator("audit_op_log", entries, "offset", "pageSize");
+    }
+
+
+    public static String selectGenerator(String tableName, List<WhereEntry> entryList, String offSetName, String limitName) {
         StringBuilder sb = new StringBuilder().append("\"select * from ").append(tableName).append(" where 1=1 \" + \n");
-        if (whereColumns.length > 0) {
-            for (String whereColumn : whereColumns) {
-                String insertExpression = getInsertExpression(whereColumn, paramName, true, false);
+        if (CollUtil.isNotEmpty(entryList)) {
+            for (WhereEntry entry : entryList) {
+                String insertExpression = getSelectExpression(entry);
                 sb.append(insertExpression);
             }
         }
@@ -43,12 +68,12 @@ public class SQLGenerator {
         return sb.toString();
     }
 
-    public static String updateGenerator(String tableName, String[] updateColumns, String[] whereColumns, String paramName) {
+    public static String updateGenerator(String tableName, List<WhereEntry> entryList, String[] whereColumns, String paramName) {
         String updaterParam = getParam("updater", paramName);
 
         StringBuilder sb = new StringBuilder().append("\"update ").append(tableName).append(" set updater=").append(updaterParam).append(" \"+\n");
-        for (String updateColumn : updateColumns) {
-            String updateExpression = getUpdateExpression(updateColumn, paramName, true);
+        for (WhereEntry entry : entryList) {
+            String updateExpression = getUpdateExpression(entry);
             sb.append(updateExpression);
         }
 
@@ -58,7 +83,7 @@ public class SQLGenerator {
             for (int i = 0; i < whereColumns.length; i++) {
                 String whereColumn = whereColumns[i];
                 if (i != 0) {
-                    sb.append(" and ");
+                    sb.append(AND);
                 }
                 sb.append(whereColumn).append("=").append(getParam(whereColumn, null));
             }
@@ -92,49 +117,67 @@ public class SQLGenerator {
         return sb.toString();
     }
 
-    public static String getInsertExpression(String column, String paramName, boolean text, boolean like) {
-        String param = getParam(column, paramName);
-        String expressionIf = getExpressionIf(param, text);
-        String expressionDo = getExpressionDo(column, param, true, like);
+    public static String getSelectExpression(WhereEntry entry) {
+        String expressionIf = getExpressionIf(entry);
+        String expressionDo = getExpressionDo(entry, true);
         return "\"" + expressionIf + expressionDo + "\" +\n";
     }
 
-    public static String getUpdateExpression(String column, String paramName, boolean text) {
-        String param = getParam(column, paramName);
-        String expressionIf = getExpressionIf(param, text);
-        String expressionDo = getExpressionDo(column, param, false, false);
+    public static String getUpdateExpression(WhereEntry entry) {
+        String expressionIf = getExpressionIf(entry);
+        String expressionDo = getExpressionDo(entry, false);
 
         return "\"" + expressionIf + expressionDo + "\" +\n";
     }
 
-    public static String getExpressionDo(String column, String param, boolean select, boolean like) {
+    public static String getExpressionDo(WhereEntry entry, boolean select) {
         StringBuilder sb = new StringBuilder();
+        String fullName = entry.valueA != null ? entry.valueA : entry.getFullName();
+        String column = entry.getColumn();
         sb.append("{");
         if (select) {
-            sb.append(" and ").append(column);
-            if (like) {
-                sb.append("like concat('%', ").append(param).append(", '%')");
-            } else {
-                sb.append("=").append(param);
+            sb.append(AND).append(column).append(" ");
+            switch (entry.operation) {
+
+                case EQUAL:
+                    sb.append(" = ").append(fullName);
+                    break;
+                case LIKE:
+                    sb.append(" like concat('%', ").append(fullName).append(", '%')");
+                    break;
+                case GTE:
+                    sb.append(" >= ").append(fullName);
+                    break;
+                case LTE:
+                    sb.append(" <= ").append(fullName);
+                    break;
+                case IN:
+                    sb.append(" in ").append(fullName);
+                    break;
+                case BETWEEN:
+                    sb.append(" between ").append(entry.valueA).append(AND).append(entry.valueB);
+                    break;
             }
         } else {
-            sb.append(", ").append(column).append("=").append(param);
+            sb.append(", ").append(column).append("=").append(fullName);
         }
         sb.append(" }");
         return sb.toString();
     }
 
-    public static String getExpressionIf(String param, boolean text) {
-        StringBuilder sb = new StringBuilder().append("#if(").append(param).append(" != null ");
-        if (text) {
-            sb.append("&& ").append(param).append(" != '' )");
+    public static String getExpressionIf(WhereEntry entry) {
+        String fullName = entry.getFullName();
+        StringBuilder sb = new StringBuilder().append("#if(").append(fullName).append(" != null ");
+        if (entry.getClazz() == String.class) {
+            sb.append("&& ").append(fullName).append(" != ''");
         }
+        sb.append(" )");
         return sb.toString();
     }
 
 
     public static String getParam(String column, String paramName) {
-        String item = StrUtil.toCamelCase(column);
+        String item = CharSequenceUtil.toCamelCase(column);
         StringBuilder sb = new StringBuilder()
                 .append(":");
         if (paramName != null) {
@@ -144,5 +187,50 @@ public class SQLGenerator {
         return sb.toString();
     }
 
+
+    public enum Operation {
+        EQUAL(),
+        GTE,
+        LTE,
+        BETWEEN,
+        LIKE,
+        IN
+    }
+
+    @Getter
+    @Setter
+    @Accessors(chain = true)
+    public static class WhereEntry {
+        private String column;
+        private String paramName;
+        private Class<?> clazz;
+        private Operation operation;
+        private String valueA;
+        private String valueB;
+
+        public static WhereEntry of(String column) {
+            return of(null, column, String.class, Operation.EQUAL);
+        }
+
+        public static WhereEntry of(String paramName, String column) {
+            return of(paramName, column, String.class, Operation.EQUAL);
+        }
+
+        public static WhereEntry of(String paramName, String column, Class<?> clazz) {
+            return of(paramName, column, clazz, Operation.EQUAL);
+        }
+
+        public static WhereEntry of(String paramName, String column, Operation operation) {
+            return of(paramName, column, String.class, operation);
+        }
+
+        public static WhereEntry of(String paramName, String column, Class<?> clazz, Operation operation) {
+            return new WhereEntry().setColumn(column).setClazz(clazz).setOperation(operation).setParamName(paramName);
+        }
+
+        public String getFullName() {
+            return getParam(column, paramName);
+        }
+    }
 
 }
