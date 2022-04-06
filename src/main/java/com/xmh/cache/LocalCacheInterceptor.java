@@ -39,7 +39,11 @@ public class LocalCacheInterceptor implements MethodInterceptor {
         // 删除缓存
         if (localCache.delete()) {
             o = invocation.proceed();
-            CacheUtil.delete(key);
+            if (localCache.deleteAll()) {
+                CacheUtil.deleteAllMatched(key);
+            } else {
+                CacheUtil.delete(key);
+            }
             return o;
         }
 

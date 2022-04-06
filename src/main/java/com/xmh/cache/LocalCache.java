@@ -1,7 +1,5 @@
 package com.xmh.cache;
 
-import org.springframework.core.annotation.AliasFor;
-
 import java.lang.annotation.*;
 import java.util.concurrent.TimeUnit;
 
@@ -36,4 +34,7 @@ public @interface LocalCache {
      * 调用时进行删除操作
      */
     boolean delete() default false;
+
+    /** 使用正则匹配删除 */
+    boolean deleteAll() default false;
 }

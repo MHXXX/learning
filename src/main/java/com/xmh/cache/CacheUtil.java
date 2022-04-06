@@ -1,7 +1,6 @@
 package com.xmh.cache;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.concurrent.Callable;
@@ -65,6 +64,10 @@ public class CacheUtil {
         CACHE.remove(key);
     }
 
+    public static synchronized void deleteAllMatched(String regex) {
+        CACHE.entrySet().removeIf(stringCacheInfoEntry -> stringCacheInfoEntry.getKey().matches(regex));
+    }
+
     private static class CacheInfo {
         /** 缓存Loader */
         public final Callable<?> callable;
@@ -120,6 +123,6 @@ public class CacheUtil {
         }
     }
 
-    private static class Expired{
+    private static class Expired {
     }
 }
