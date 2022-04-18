@@ -5,6 +5,7 @@ import cn.hutool.core.text.CharSequenceUtil;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -25,32 +26,38 @@ public class SQLGenerator {
     }
 
     public static String insertSql() {
-        return insertGenerator("audit_whitelist",
+        return insertGenerator("soc_threat_modeling",
 
-                new String[]{"user", "user_name", "department_id", "department_name", "rule_id", "scenario_id", "event_type",
-                        "incident_category_code", "reason", "creator", "updater", "expire_time", "risk_level"},
+                new String[]{"name", "domain", "department", "threat_modeling", "hit_rules", "creator"},
 
                 "do");
     }
 
     public static String updateSql() {
         List<WhereEntry> entries = new LinkedList<>();
-        entries.add(WhereEntry.of(null, "user_name", String.class, Operation.EQUAL));
-        return updateGenerator("audit_event_type", entries, new String[]{"id"}, "auditEventTypeDO");
+        entries.add(WhereEntry.of("do", "name", String.class, Operation.LIKE));
+        entries.add(WhereEntry.of("do", "domain", String.class, Operation.LIKE));
+        entries.add(WhereEntry.of("do", "department", String.class, Operation.EQUAL));
+        entries.add(WhereEntry.of("do", "threat_modeling", String.class, Operation.EQUAL));
+        entries.add(WhereEntry.of("do", "hit_rules", String.class, Operation.EQUAL));
+        return updateGenerator("soc_threat_modeling", entries, new String[]{"id"}, null);
 
     }
 
 
+    /**
+     * @SQLParam("department") String department, @SQLParam("domainLike") String domainLike, @SQLParam("creatorLike") String creatorLike
+     */
     public static String selectSql() {
         List<WhereEntry> entries = new LinkedList<>();
-        entries.add(WhereEntry.of(null, "user_name", String.class, Operation.EQUAL));
-        entries.add(WhereEntry.of(null, "department_name", String.class, Operation.LIKE));
-        entries.add(WhereEntry.of(null, "triggered_strategy_name", String.class, Operation.LIKE));
-        entries.add(WhereEntry.of(null, "scenario_id", Number.class, Operation.EQUAL));
-        entries.add(WhereEntry.of(null, "warn_level", Number.class, Operation.EQUAL));
-        entries.add(WhereEntry.of(null, "create_time", Date.class, Operation.LTE).setValueA("endTs"));
-        entries.add(WhereEntry.of(null, "create_time", Date.class, Operation.GTE).setValueA("startTs"));
-        return selectGenerator("audit_op_log", entries, "offset", "pageSize");
+        entries.add(WhereEntry.of(null, "department", String.class, Operation.EQUAL));
+        entries.add(WhereEntry.of(null, "domain", String.class, Operation.LIKE).setValueA("domainLike"));
+        entries.add(WhereEntry.of(null, "name", String.class, Operation.LIKE).setValueA("nameLike"));
+//        entries.add(WhereEntry.of(null, "scenario_id", Number.class, Operation.EQUAL));
+//        entries.add(WhereEntry.of(null, "warn_level", Number.class, Operation.EQUAL));
+//        entries.add(WhereEntry.of(null, "create_time", Date.class, Operation.LTE).setValueA("endTs"));
+//        entries.add(WhereEntry.of(null, "create_time", Date.class, Operation.GTE).setValueA("startTs"));
+        return selectGenerator("soc_threat_modeling", entries, "offset", "pageSize");
     }
 
 
@@ -69,9 +76,9 @@ public class SQLGenerator {
     }
 
     public static String updateGenerator(String tableName, List<WhereEntry> entryList, String[] whereColumns, String paramName) {
-        String updaterParam = getParam("updater", paramName);
+        String updaterParam = getParam("id", paramName);
 
-        StringBuilder sb = new StringBuilder().append("\"update ").append(tableName).append(" set updater=").append(updaterParam).append(" \"+\n");
+        StringBuilder sb = new StringBuilder().append("\"update ").append(tableName).append(" set id=").append(updaterParam).append(" \"+\n");
         for (WhereEntry entry : entryList) {
             String updateExpression = getUpdateExpression(entry);
             sb.append(updateExpression);
@@ -132,7 +139,7 @@ public class SQLGenerator {
 
     public static String getExpressionDo(WhereEntry entry, boolean select) {
         StringBuilder sb = new StringBuilder();
-        String fullName = entry.valueA != null ? entry.valueA : entry.getFullName();
+        String fullName = entry.valueA != null ? (":" + entry.valueA) : entry.getFullName();
         String column = entry.getColumn();
         sb.append("{");
         if (select) {
@@ -167,6 +174,9 @@ public class SQLGenerator {
 
     public static String getExpressionIf(WhereEntry entry) {
         String fullName = entry.getFullName();
+        if (StringUtils.isNotEmpty(entry.getValueA())) {
+            fullName = ":" + entry.getValueA();
+        }
         StringBuilder sb = new StringBuilder().append("#if(").append(fullName).append(" != null ");
         if (entry.getClazz() == String.class) {
             sb.append("&& ").append(fullName).append(" != ''");
