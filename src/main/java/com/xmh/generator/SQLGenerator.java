@@ -1,4 +1,4 @@
-package com.xmh;
+package com.xmh.generator;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.text.CharSequenceUtil;
@@ -23,14 +23,38 @@ public class SQLGenerator {
 
     public static void main(String[] args) {
         System.out.println(selectSql());
+//        System.out.println(updateSql());
+//        System.out.println(insertSql());
     }
 
-    public static String insertSql() {
-        return insertGenerator("soc_threat_modeling",
+    /**
+     private Integer scenarioId;
+     private String receiverEmail;
+     private Boolean enabled;
+     private String creatorEmail;
+     private Long createTimeGTE;
+     private Long createTimeLTE;
+     */
+    public static String selectSql() {
+        List<WhereEntry> entries = new LinkedList<>();
+        entries.add(WhereEntry.of("item", "uuid", String.class, Operation.EQUAL));
+        entries.add(WhereEntry.of("item", "host", String.class, Operation.EQUAL));
+        entries.add(WhereEntry.of("item", "creator_email", String.class, Operation.LIKE));
 
-                new String[]{"name", "domain", "department", "threat_modeling", "hit_rules", "creator"},
+        entries.add(WhereEntry.of("item", "death_toll", Integer.class, Operation.GTE).setValueA("deathTollGTE"));
+        entries.add(WhereEntry.of("item", "death_toll", String.class, Operation.LTE).setValueA("deathTollLTE"));
 
-                "do");
+
+        entries.add(WhereEntry.of("item", "create_time", Date.class, Operation.GTE).setValueA("createTimeGTE"));
+        entries.add(WhereEntry.of("item", "create_time", Date.class, Operation.LTE).setValueA("createTimeLTE"));
+//
+//        entries.add(WhereEntry.of("item", "sample_num", Integer.class, Operation.GTE).setValueA("sampleNumGTE"));
+//        entries.add(WhereEntry.of("item", "sample_num", Integer.class, Operation.LTE).setValueA("sampleNumLTE"));
+//        entries.add(WhereEntry.of("item", "params", String.class, Operation.LIKE).setValueA("paramsLike"));
+//        entries.add(WhereEntry.of("item", "creator_email", String.class, Operation.LIKE).setValueA("creatorEmailLike"));
+//        entries.add(WhereEntry.of("item", "create_time", Date.class, Operation.LTE).setValueA("createTimeLTE"));
+//        entries.add(WhereEntry.of("item", "create_time", Date.class, Operation.GTE).setValueA("createTimeGTE"));
+        return selectGenerator("soc_phishing_task", entries, "offset", "pageSize");
     }
 
     public static String updateSql() {
@@ -42,22 +66,7 @@ public class SQLGenerator {
         entries.add(WhereEntry.of("do", "hit_rules", String.class, Operation.EQUAL));
         return updateGenerator("soc_threat_modeling", entries, new String[]{"id"}, null);
 
-    }
 
-
-    /**
-     * @SQLParam("department") String department, @SQLParam("domainLike") String domainLike, @SQLParam("creatorLike") String creatorLike
-     */
-    public static String selectSql() {
-        List<WhereEntry> entries = new LinkedList<>();
-        entries.add(WhereEntry.of(null, "department", String.class, Operation.EQUAL));
-        entries.add(WhereEntry.of(null, "domain", String.class, Operation.LIKE).setValueA("domainLike"));
-        entries.add(WhereEntry.of(null, "name", String.class, Operation.LIKE).setValueA("nameLike"));
-//        entries.add(WhereEntry.of(null, "scenario_id", Number.class, Operation.EQUAL));
-//        entries.add(WhereEntry.of(null, "warn_level", Number.class, Operation.EQUAL));
-//        entries.add(WhereEntry.of(null, "create_time", Date.class, Operation.LTE).setValueA("endTs"));
-//        entries.add(WhereEntry.of(null, "create_time", Date.class, Operation.GTE).setValueA("startTs"));
-        return selectGenerator("soc_threat_modeling", entries, "offset", "pageSize");
     }
 
 
@@ -69,8 +78,12 @@ public class SQLGenerator {
                 sb.append(insertExpression);
             }
         }
+        sb.append("\" order by id desc \" + \n");
+
         if (offSetName != null) {
             sb.append("\"#if(:").append(offSetName).append(" != null) { limit :").append(offSetName).append(",:").append(limitName).append(" } \"");
+        } else {
+            sb.setLength(sb.length()-3);
         }
         return sb.toString();
     }
@@ -139,7 +152,7 @@ public class SQLGenerator {
 
     public static String getExpressionDo(WhereEntry entry, boolean select) {
         StringBuilder sb = new StringBuilder();
-        String fullName = entry.valueA != null ? (":" + entry.valueA) : entry.getFullName();
+        String fullName = entry.valueA != null ? entry.getAFullName() : entry.getFullName();
         String column = entry.getColumn();
         sb.append("{");
         if (select) {
@@ -162,7 +175,7 @@ public class SQLGenerator {
                     sb.append(" in ").append(fullName);
                     break;
                 case BETWEEN:
-                    sb.append(" between ").append(entry.valueA).append(AND).append(entry.valueB);
+                    sb.append(" between ").append(entry.getAFullName()).append(AND).append(entry.getBFullName());
                     break;
             }
         } else {
@@ -173,10 +186,8 @@ public class SQLGenerator {
     }
 
     public static String getExpressionIf(WhereEntry entry) {
-        String fullName = entry.getFullName();
-        if (StringUtils.isNotEmpty(entry.getValueA())) {
-            fullName = ":" + entry.getValueA();
-        }
+        String fullName = StringUtils.isNotEmpty(entry.getValueA()) ? entry.getAFullName() : entry.getFullName();
+
         StringBuilder sb = new StringBuilder().append("#if(").append(fullName).append(" != null ");
         if (entry.getClazz() == String.class) {
             sb.append("&& ").append(fullName).append(" != ''");
@@ -240,6 +251,14 @@ public class SQLGenerator {
 
         public String getFullName() {
             return getParam(column, paramName);
+        }
+
+        public String getAFullName() {
+            return getParam(valueA, paramName);
+        }
+
+        public String getBFullName() {
+            return getParam(valueB, paramName);
         }
     }
 
