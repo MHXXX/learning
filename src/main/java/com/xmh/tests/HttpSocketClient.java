@@ -1,12 +1,9 @@
-package com.xmh;
+package com.xmh.tests;
 
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IoUtil;
-import cn.hutool.core.lang.Range;
 import cn.hutool.core.net.URLEncodeUtil;
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -19,26 +16,24 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 /**
- * .
+ * 简单的http客户端, 通过socket连接到服务器, 发送http请求, 并获取响应. 支持https.
+ * 支持简单的重定向需求
  *
  * @author 谢明辉
  */
 
 @Slf4j
-public class Test {
+public class HttpSocketClient {
 
     private static ThreadLocal<Boolean> redirected = ThreadLocal.withInitial(() -> false);
 

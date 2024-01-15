@@ -1,7 +1,5 @@
 package com.xmh.juc;
 
-import com.xmh.Test2;
-
 import java.util.concurrent.Semaphore;
 
 /**

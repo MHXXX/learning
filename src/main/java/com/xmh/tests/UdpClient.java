@@ -1,4 +1,4 @@
-package com.xmh;
+package com.xmh.tests;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
