@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MainController {
 
     @GetMapping("/test/{num}")
-    @MyLog(value = "'hello ' + #num")
+    @MyLog(value = "'call method pow and result is: ' + #pow(#num)")
     @LocalCache(expression = "'testKey_' + #num", duration = 10)
     public String test(@PathVariable("num") Integer num) {
         return "success " + num;

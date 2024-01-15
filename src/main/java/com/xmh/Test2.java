@@ -1,5 +1,11 @@
 package com.xmh;
 
+import cn.hutool.core.lang.Dict;
+import cn.hutool.http.HttpResponse;
+import cn.hutool.http.HttpUtil;
+
+import java.awt.*;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
@@ -13,8 +19,8 @@ import java.util.PriorityQueue;
 public class Test2 {
 
     public static void main(String[] args) throws Exception {
-        System.out.println(System.getProperty("os.arch"));
-        run(100);
+
+
     }
 
     public static Integer small(Integer num) {
